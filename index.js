@@ -99,7 +99,8 @@ client.connect(err => {
                     // console.log(data?.GatewayPageURL);  
 
                     if (data?.GatewayPageURL) {
-                        // console.log('Redirecting to: ', data?.GatewayPageURL);
+                        
+                        console.log('Redirecting to: ', data?.GatewayPageURL);
 
                         return res.status(200).send(data?.GatewayPageURL);
 
@@ -129,7 +130,7 @@ client.connect(err => {
                 }
             })
 
-            res.redirect(`https://khadok-80173.web.app/ssl-payment-success/${req.body.tran_id}`)
+            res.redirect(`https://hospisearch.netlify.app/ssl-payment-success/${req.body.tran_id}`)
         } catch (error) {
             console.log(error);
         }
@@ -140,7 +141,7 @@ client.connect(err => {
         try {
             const result = await orderCollection.deleteOne({ tran_id: req.body.tran_id })
 
-            res.redirect(`https://khadok-80173.web.app`)
+            res.redirect(`https://hospisearch.netlify.app`)
         } catch (error) {
             console.log(error);
         }
@@ -150,7 +151,7 @@ client.connect(err => {
         try {
             const result = await orderCollection.deleteOne({ tran_id: req.body.tran_id })
 
-            res.redirect(`https://khadok-80173.web.app`)
+            res.redirect(`https://hospisearch.netlify.app`)
         } catch (error) {
             console.log(error);
         }

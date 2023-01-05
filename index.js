@@ -25,187 +25,197 @@ const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster
 // const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.frskuji.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
 
-client.connect(err => {
-    const orderCollection = client.db("HospiSearch").collection("Orders");
-    // perform actions on the collection object
+const run = async () => {
+    try {
 
-    // Initialize app
-    app.get('/', async (req, res) => {
-        try {
+        client.connect();
+        console.log(`DB Connect Successfull`.white.bgMagenta);
+        const orderCollection = client.db("HospiSearch").collection("Orders");
+        // perform actions on the collection object
 
-            /** 
-            * Root url response 
-            */
+        // Initialize app
+        app.get('/', async (req, res) => {
+            try {
 
-            return res.status(200).json({
-                message: "Welcome to HospiSearch Server App",
-                url: `${process.env.ROOT}/init`
-            })
-        } catch (error) {
-            console.log(error);
-        }
-    })
+                /** 
+                * Root url response 
+                */
 
-    // Initialize payment
-    app.post('/init', async (req, res) => {
-        try {
-            // console.log("Hitting");
-            const productInfo = {
-                total_amount: req.body.total_amount,
-                currency: 'BDT',
-                tran_id: uuidv4(),
-                success_url: `${process.env.ROOT}/ssl-payment-success`,
-                fail_url: `${process.env.ROOT}/ssl-payment-fail`,
-                cancel_url: `${process.env.ROOT}/ssl-payment-cancel`,
-                paymentStatus: 'pending',
-                shipping_method: 'Courier',
-                product_name: req.body.item_name,
-                product_category: "medicine",
-                product_profile: "medicine description",
-                product_image: req.body.item_image,
-                cus_name: req.body.cus_name,
-                cus_email: req.body.cus_email,
-                cus_add1: 'Dhaka',
-                cus_add2: 'Dhaka',
-                cus_city: 'Dhaka',
-                cus_state: 'Dhaka',
-                cus_postcode: '1000',
-                cus_country: 'Bangladesh',
-                cus_phone: '01711111111',
-                cus_fax: '01711111111',
-                ship_name: req.body.cus_name,
-                ship_add1: 'Dhaka',
-                ship_add2: 'Dhaka',
-                ship_city: 'Dhaka',
-                ship_state: 'Dhaka',
-                ship_postcode: 1000,
-                ship_country: 'Bangladesh',
-                multi_card_name: 'mastercard',
-                value_a: 'ref001_A',
-                value_b: 'ref002_B',
-                value_c: 'ref003_C',
-                value_d: 'ref004_D',
-                ipn_url: `${process.env.ROOT}/ssl-payment-notification`,
-            };
+                return res.status(200).json({
+                    message: "Welcome to HospiSearch Server App",
+                    url: `${process.env.ROOT}/init`
+                })
+            } catch (error) {
+                console.log(error);
+            }
+        })
 
-            // Insert order info
-            const result = await orderCollection.insertOne(productInfo);
+        // Initialize payment
+        app.post('/init', async (req, res) => {
+            try {
+                // console.log("Hitting");
+                const productInfo = {
+                    total_amount: req.body.total_amount,
+                    currency: 'BDT',
+                    tran_id: uuidv4(),
+                    success_url: `${process.env.ROOT}/ssl-payment-success`,
+                    fail_url: `${process.env.ROOT}/ssl-payment-fail`,
+                    cancel_url: `${process.env.ROOT}/ssl-payment-cancel`,
+                    paymentStatus: 'pending',
+                    shipping_method: 'Courier',
+                    product_name: req.body.item_name,
+                    product_category: "medicine",
+                    product_profile: "medicine description",
+                    product_image: req.body.item_image,
+                    cus_name: req.body.cus_name,
+                    cus_email: req.body.cus_email,
+                    cus_add1: 'Dhaka',
+                    cus_add2: 'Dhaka',
+                    cus_city: 'Dhaka',
+                    cus_state: 'Dhaka',
+                    cus_postcode: '1000',
+                    cus_country: 'Bangladesh',
+                    cus_phone: '01711111111',
+                    cus_fax: '01711111111',
+                    ship_name: req.body.cus_name,
+                    ship_add1: 'Dhaka',
+                    ship_add2: 'Dhaka',
+                    ship_city: 'Dhaka',
+                    ship_state: 'Dhaka',
+                    ship_postcode: 1000,
+                    ship_country: 'Bangladesh',
+                    multi_card_name: 'mastercard',
+                    value_a: 'ref001_A',
+                    value_b: 'ref002_B',
+                    value_c: 'ref003_C',
+                    value_d: 'ref004_D',
+                    ipn_url: `${process.env.ROOT}/ssl-payment-notification`,
+                };
 
-            const sslcommerz = new SSLCommerzPayment(process.env.STORE_ID, process.env.STORE_PASS, false) //true for live default false for sandbox
-            sslcommerz.init(productInfo)
-                .then(data => {
-                    //process the response that got from sslcommerz 
-                    //https://developer.sslcommerz.com/doc/v4/#returned-parameters
-                    const info = { ...productInfo, ...data };
-                    // console.log(data?.GatewayPageURL);  
+                // Insert order info
+                const result = await orderCollection.insertOne(productInfo);
 
-                    if (data?.GatewayPageURL) {
+                const sslcommerz = new SSLCommerzPayment(process.env.STORE_ID, process.env.STORE_PASS, false) //true for live default false for sandbox
+                sslcommerz.init(productInfo)
+                    .then(data => {
+                        //process the response that got from sslcommerz 
+                        //https://developer.sslcommerz.com/doc/v4/#returned-parameters
+                        const info = { ...productInfo, ...data };
+                        // console.log(data?.GatewayPageURL);  
 
-                        console.log('Redirecting to: ', data?.GatewayPageURL);
+                        if (data?.GatewayPageURL) {
 
-                        return res.status(200).send(data?.GatewayPageURL);
+                            console.log('Redirecting to: ', data?.GatewayPageURL);
 
-                        // res.send({data?.GatewayPageURL})
-                    }
-                    else {
-                        return res.status(400).json({
-                            message: "Session was not Successful"
-                        });
-                    }
+                            return res.status(200).send(data?.GatewayPageURL);
 
-                });
-        } catch (error) {
-            console.log(error);
-        }
+                            // res.send({data?.GatewayPageURL})
+                        }
+                        else {
+                            return res.status(400).json({
+                                message: "Session was not Successful"
+                            });
+                        }
 
-    });
+                    });
+            } catch (error) {
+                console.log(error);
+            }
+
+        });
 
 
 
-    app.post("/ssl-payment-success", async (req, res) => {
+        app.post("/ssl-payment-success", async (req, res) => {
 
-        try {
-            const result = await orderCollection.updateOne({ tran_id: req.body.tran_id }, {
-                $set: {
-                    val_id: req.body.val_id
-                }
-            })
-
-            res.redirect(`https://hospisearch.netlify.app/ssl-payment-success/${req.body.tran_id}`)
-        } catch (error) {
-            console.log(error);
-        }
-
-    })
-
-    app.post("/ssl-payment-fail", async (req, res) => {
-        try {
-            const result = await orderCollection.deleteOne({ tran_id: req.body.tran_id })
-
-            res.redirect(`https://hospisearch.netlify.app`)
-        } catch (error) {
-            console.log(error);
-        }
-    })
-
-    app.post("/ssl-payment-cancel", async (req, res) => {
-        try {
-            const result = await orderCollection.deleteOne({ tran_id: req.body.tran_id })
-
-            res.redirect(`https://hospisearch.netlify.app`)
-        } catch (error) {
-            console.log(error);
-        }
-    })
-
-    app.post("/ssl-payment-notification", (req, res) => {
-        try {
-            console.log(req.body)
-            res.send(req.body);
-        } catch (error) {
-            console.log(error);
-        }
-    })
-
-    app.post('/validate', async (req, res) => {
-        try {
-            const result = await orderCollection.findOne({
-                tran_id: req.body.tran_id
-            })
-
-            if (result.val_id === req.body.val_id) {
-                const update = await orderCollection.updateOne({ tran_id: req.body.tran_id }, {
+            try {
+                const result = await orderCollection.updateOne({ tran_id: req.body.tran_id }, {
                     $set: {
-                        paymentStatus: 'paymentComplete'
+                        val_id: req.body.val_id
                     }
                 })
-                console.log(update);
-                res.send(update.modifiedCount > 0)
 
+                res.redirect(`https://hospisearch.netlify.app/ssl-payment-success/${req.body.tran_id}`)
+            } catch (error) {
+                console.log(error);
             }
-            else {
-                res.send("Chor detected")
+
+        })
+
+        app.post("/ssl-payment-fail", async (req, res) => {
+            try {
+                const result = await orderCollection.deleteOne({ tran_id: req.body.tran_id })
+
+                res.redirect(`https://hospisearch.netlify.app`)
+            } catch (error) {
+                console.log(error);
             }
-        } catch (error) {
-            console.log(error);
-        }
+        })
 
-    })
+        app.post("/ssl-payment-cancel", async (req, res) => {
+            try {
+                const result = await orderCollection.deleteOne({ tran_id: req.body.tran_id })
 
-    app.get('/orders/:tran_id', async (req, res) => {
-        try {
-            const id = req.params.tran_id;
-            const result = await orderCollection.findOne({ tran_id: id })
-            res.json(result)
-        } catch (error) {
-            console.log(error);
-        }
-    })
+                res.redirect(`https://hospisearch.netlify.app`)
+            } catch (error) {
+                console.log(error);
+            }
+        })
 
-});
+        app.post("/ssl-payment-notification", (req, res) => {
+            try {
+                console.log(req.body)
+                res.send(req.body);
+            } catch (error) {
+                console.log(error);
+            }
+        })
+
+        app.post('/validate', async (req, res) => {
+            try {
+                const result = await orderCollection.findOne({
+                    tran_id: req.body.tran_id
+                })
+
+                if (result.val_id === req.body.val_id) {
+                    const update = await orderCollection.updateOne({ tran_id: req.body.tran_id }, {
+                        $set: {
+                            paymentStatus: 'paymentComplete'
+                        }
+                    })
+                    console.log(update);
+                    res.send(update.modifiedCount > 0)
+
+                }
+                else {
+                    res.send("Chor detected")
+                }
+            } catch (error) {
+                console.log(error);
+            }
+
+        })
+
+        app.get('/orders/:tran_id', async (req, res) => {
+            try {
+                const id = req.params.tran_id;
+                const result = await orderCollection.findOne({ tran_id: id })
+                res.json(result)
+            } catch (error) {
+                console.log(error);
+            }
+        })
 
 
 
+    }
+    finally {
+
+    }
+}
+
+
+run().catch(console.dir);
 
 
 app.listen(port, () => {

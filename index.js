@@ -21,7 +21,8 @@ app.use(bodyParser.json());
 
 const port = process.env.PORT || 5000;
 
-const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.frskuji.mongodb.net/?retryWrites=true&w=majority`;
+const uri = `mongodb+srv://HospiSearch:${process.env.DB_PASS}@cluster0.xltbnvl.mongodb.net/?retryWrites=true&w=majority`;
+// const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.frskuji.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
 
 client.connect(err => {
@@ -99,7 +100,7 @@ client.connect(err => {
                     // console.log(data?.GatewayPageURL);  
 
                     if (data?.GatewayPageURL) {
-                        
+
                         console.log('Redirecting to: ', data?.GatewayPageURL);
 
                         return res.status(200).send(data?.GatewayPageURL);
